@@ -19,5 +19,6 @@ bin/
 #Ignore personal files
 TODO.txt
 
-#ignore virtual environment dirs
+#ignore virtual environment and python dirs
 v_env/
+__pycache__/

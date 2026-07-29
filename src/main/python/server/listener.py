@@ -1,16 +1,23 @@
-import sys
 import socket
-import yaml
 import struct
+import sys
+from pathlib import Path
+
+import yaml
+
 import predict
 
 MAX_BYTES = 20000
+REPO_ROOT = Path(__file__).resolve().parents[4]
+CONFIG_PATH = REPO_ROOT / "src/main/resources/serverConfig.yaml"
+MODEL_PATH = REPO_ROOT / "src/main/resources/save_at_5.keras"
 
-with open("src/main/resources/serverConfig.yaml") as stream:
+with CONFIG_PATH.open() as stream:
     try:
         data = yaml.safe_load(stream)
     except yaml.YAMLError as exc:
         print(exc)
+        sys.exit(1)
 
 serverPort = int(data["serverPort"])
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,9 +25,10 @@ serverAddress = "localhost", serverPort
 
 serverSocket.bind(serverAddress)
 
-#1: backlog queue: not completed connections
+# 1: backlog queue: not completed connections
 serverSocket.listen(1)
 
+model = predict.load_model(MODEL_PATH)
 
 while True:
     print("server listening...")
@@ -41,22 +49,18 @@ while True:
         bytes_received = 0
 
         while bytes_received < image_size:
-
             bytes_to_read = min(image_size - bytes_received, 4096)
             chunk = connectionSocket.recv(bytes_to_read)
-            
+
             if not chunk:
                 break
-                
+
             chunks.append(chunk)
             bytes_received += len(chunk)
 
         image_bytes = b"".join(chunks)
-
-        ###CODICE MODELLO###
-        modelPath = "src/main/resources/save_at_5.keras"
-        classNames, floats, preds = predict.predict(modelPath, image_bytes)
-        print(preds)
+        classNames, confidence, probabilities = predict.predict(model, image_bytes)
+        print(f"{classNames} with {confidence}% confidence")
 
     except Exception as e:
         print(f"Error: {e}")
