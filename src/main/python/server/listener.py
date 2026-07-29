@@ -1,8 +1,8 @@
 import sys
 import socket
 import yaml
-import threading
 import struct
+import main.python.server.predict as predict
 
 MAX_BYTES = 20000
 
@@ -53,11 +53,10 @@ while True:
 
         image_bytes = b"".join(chunks)
 
-        if len(image_bytes) == image_size:
-            with open("delete.png", "wb") as f:
-                f.write(image_bytes)
-        else:
-            print("Error: received bytes do not correspond to the expected length.\n")
+        ###CODICE MODELLO###
+        modelPath = "src/main/resources/save_at_5.keras"
+        classNames, floats, preds = predict.predict(modelPath, image_bytes)
+        print(preds)
 
     except Exception as e:
         print(f"Error: {e}")
