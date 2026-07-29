@@ -18,4 +18,6 @@ bin/
 
 #Ignore personal files
 TODO.txt
-shares/
+
+#ignore virtual environment dirs
+v_env/
