@@ -7,10 +7,16 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DrawPanel
+ */
 public class DrawPanel extends JPanel {
 
     private final List<Point> pixels = new ArrayList<>();
 
+    /**
+     * Constructs a DrawPanel with mouse listeners for drawing.
+     */
     public DrawPanel() {
         setBackground(Color.WHITE); 
 
@@ -66,10 +72,17 @@ public class DrawPanel extends JPanel {
         }
     }
 
+    /**
+     * Returns a copy of the list of points representing the drawing.
+     * @return
+     */
     public List<Point> getDrawing() {
         return new ArrayList<>(pixels);
     }
 
+    /**
+     * Erases all the points in the drawing and repaints the panel.
+     */
     public void eraseAll() {
         this.pixels.replaceAll(p -> null);
         this.paintComponent(getGraphics());

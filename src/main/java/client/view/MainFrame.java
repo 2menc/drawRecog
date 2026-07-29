@@ -6,11 +6,18 @@ import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 
+/**
+ * MainFrame
+ */
 public class MainFrame extends JFrame{
 
     private final Toolbar toolbar;
     private final DrawPanel canvas;
 
+    /**
+     * Constructs the main frame of the application, setting up the layout, toolbar, and drawing panel.
+     * Initializes the frame size based on the screen dimensions and makes it visible.
+     */
     public MainFrame() {
         this.setLayout(new BorderLayout());
 
