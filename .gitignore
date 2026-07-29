@@ -21,4 +21,4 @@ TODO.txt
 
 #ignore virtual environment and python dirs
 v_env/
-__pycache__/
+src/main/python/server/__pycache__/
