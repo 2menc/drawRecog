@@ -3,6 +3,9 @@ package client.controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+
+import client.model.connection.ImageConverter;
+import client.model.connection.Sender;
 import client.view.MainFrame;
 
 public class Controller {
@@ -23,8 +26,17 @@ public class Controller {
         this.mainFrame.getToolbar().requestedToSend(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+                final var buffImg = ImageConverter.convertToImage(mainFrame.getDrawPanel().getDrawing(), mainFrame.getDrawPanel().getSize());
+                /*
+                try {
+                    File outF = new File("DELETEME.png");
+                    ImageIO.write(buffImg, "png", outF);
+                } catch (Exception efd) {
+
+                }
+                */
+                final var sender = new Sender();
+                sender.sendFile(buffImg);
             }            
         });
     }

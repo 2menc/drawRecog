@@ -2,15 +2,9 @@ import sys
 import socket
 import yaml
 import threading
+import struct
 
-def waitForInterrupt():
-    try:
-        print("server active on port", serverPort)
-    except KeyboardInterrupt:
-        print("\nshutting off server...")
-    finally:
-        connectionSocket.close()
-        print("Server down.")
+MAX_BYTES = 20000
 
 with open("src/main/resources/serverConfig.yaml") as stream:
     try:
@@ -18,9 +12,9 @@ with open("src/main/resources/serverConfig.yaml") as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-serverPort = data["serverPort"]
+serverPort = int(data["serverPort"])
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serverAddress = data["serverAddress"], serverPort
+serverAddress = "localhost", serverPort
 
 serverSocket.bind(serverAddress)
 
@@ -33,16 +27,41 @@ while True:
     connectionSocket, address = serverSocket.accept()
     print("connection accepted from", connectionSocket, address)
 
-
     try:
-        closeConnectionThread = threading.Thread(target=waitForInterrupt)
-        print("ctrl+C to turn off the server")
+        size_data = connectionSocket.recv(4)
+        if not size_data or len(size_data) < 4:
+            print("Errore: impossibile leggere la dimensione dell'immagine.")
+            connectionSocket.close()
+            continue
 
-        ###TODO
-        print("TODO")
+        image_size = struct.unpack('>i', size_data)[0]
+        print(f"Dimensione immagine in arrivo: {image_size} byte")
 
-    except IOError:
+        chunks = []
+        bytes_received = 0
 
-        connectionSocket.send(bytes("HTTP/1.1 404 Not Found\r\n\r\n","UTF-8"))
-        connectionSocket.send(bytes("<html><head></head><body><h1>404 Not Found</h1></body></html>\r\n","UTF-8"))
+        while bytes_received < image_size:
+
+            bytes_to_read = min(image_size - bytes_received, 4096)
+            chunk = connectionSocket.recv(bytes_to_read)
+            
+            if not chunk:
+                break
+                
+            chunks.append(chunk)
+            bytes_received += len(chunk)
+
+        image_bytes = b"".join(chunks)
+
+        if len(image_bytes) == image_size:
+            with open("delete.png", "wb") as f:
+                f.write(image_bytes)
+            print("Immagine salvata con successo come 'delete.png'\n")
+        else:
+            print("Errore: i byte ricevuti non corrispondono alla dimensione attesa.\n")
+
+    except Exception as e:
+        print(f"Si è verificato un errore: {e}")
+
+    finally:
         connectionSocket.close()
