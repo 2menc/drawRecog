@@ -79,8 +79,12 @@ tasks.register<Exec>("server") {
     group = "application"
     description = "Avvia il server Python per il Machine Learning"
 
-    val venvPython = file("v_env/Scripts/python.exe")
-    val pythonExec = if (venvPython.exists()) venvPython.absolutePath else "py"
+    val isWindows = org.gradle.internal.os.OperatingSystem.current().isWindows
+
+    val venvPython = if (isWindows) file("v_env/Scripts/python.exe") else file("v_env/bin/python")
+    val defaultPython = if (isWindows) "py" else "python3"
+
+    val pythonExec = if (venvPython.exists()) venvPython.absolutePath else defaultPython
 
     commandLine(pythonExec, "-u", "src/main/python/server/listener.py")
 }
