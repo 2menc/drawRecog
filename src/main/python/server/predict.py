@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import tensorflow as tf
 
-# 1. LA LISTA CORRETTA DELLE TUE 20 CATEGORIE (Rigorasamente in ordine alfabetico)
 CATEGORIES = [
     'apple', 'banana', 'bird', 'book', 'butterfly', 
     'car', 'clock', 'cloud', 'cup', 'fish', 
@@ -11,59 +10,68 @@ CATEGORIES = [
 ]
 
 def load_model(model_path):
-    # Carica e restituisce il modello Keras
     return tf.keras.models.load_model(model_path)
 
 def predict(model, image_bytes):
-    # 2. CONVERTI I BYTE IN IMMAGINE
-    # Trasforma i byte ricevuti dal socket in un array NumPy
+    # 1. Leggi l'immagine, supportando anche il canale Alpha (trasparenza)
     nparr = np.frombuffer(image_bytes, np.uint8)
-    
-    # Decodifica l'array in un'immagine OpenCV (scala di grigi)
-    image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+    image = cv2.imdecode(nparr, cv2.IMREAD_UNCHANGED)
     
     if image is None:
         raise ValueError("Impossibile decodificare i byte dell'immagine.")
 
-    # 3. PRE-PROCESSING (Il passaggio fondamentale che mancava!)
-    # Supponiamo che il tuo Canvas Java invii tratti neri su sfondo bianco.
-    # QuickDraw è allenato su tratti bianchi su sfondo nero. Quindi dobbiamo invertire:
-    image = cv2.bitwise_not(image) # Ora lo sfondo è nero (0) e il tratto è bianco (255)
+    # 2. SE L'IMMAGINE HA UNO SFONDO TRASPARENTE, FATTI BIANCO LO SFONDO
+    if len(image.shape) == 3 and image.shape[2] == 4:
+        alpha_channel = image[:, :, 3]
+        rgb_channels = image[:, :, :3]
+        white_background = np.ones_like(rgb_channels, dtype=np.uint8) * 255
+        alpha_factor = alpha_channel[:, :, np.newaxis] / 255.0
+        image = rgb_channels * alpha_factor + white_background * (1 - alpha_factor)
+        image = image.astype(np.uint8)
 
-    # Trova i bordi del disegno per rimuovere lo spazio vuoto (Bounding Box)
-    coords = cv2.findNonZero(image)
+    # 3. CONVERTI IN SCALA DI GRIGI
+    if len(image.shape) == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image
+
+    # Ora abbiamo di sicuro uno sfondo bianco con tratto nero.
+    # INVERTIAMO: Sfondo nero (0), Tratto bianco (255)
+    gray = cv2.bitwise_not(gray)
+
+    # 4. INGROSSA IL TRATTO (Dilation)
+    # Fondamentale: evita che il disegno scompaia rimpicciolendolo a 28x28!
+    kernel = np.ones((10, 10), np.uint8) # Aumenta a 15 se il tratto scompare ancora
+    gray = cv2.dilate(gray, kernel, iterations=1)
+
+    # 5. RITAGLIA I BORDI (Bounding Box)
+    coords = cv2.findNonZero(gray)
     if coords is not None:
         x, y, w, h = cv2.boundingRect(coords)
-        
-        # Aggiungi un piccolo margine per non tagliare il disegno in modo netto
-        padding = 10
-        x = max(0, x - padding)
-        y = max(0, y - padding)
-        w = min(image.shape[1] - x, w + padding * 2)
-        h = min(image.shape[0] - y, h + padding * 2)
-        
-        # Ritaglia l'immagine
-        image = image[y:y+h, x:x+w]
+        padding = 15
+        x, y = max(0, x - padding), max(0, y - padding)
+        w = min(gray.shape[1] - x, w + padding * 2)
+        h = min(gray.shape[0] - y, h + padding * 2)
+        gray = gray[y:y+h, x:x+w]
 
-    # Ora ridimensiona l'immagine tagliata a 28x28 pixel
-    image_resized = cv2.resize(image, (28, 28), interpolation=cv2.INTER_AREA)
+    # 6. RESIZE ESATTO A 28x28
+    image_resized = cv2.resize(gray, (28, 28), interpolation=cv2.INTER_AREA)
 
-    # 4. PREPARAZIONE PER IL MODELLO
-    # Normalizza i valori dei pixel da 0-255 a 0.0-1.0
-    image_normalized = image_resized / 255.0
+    # ==============================================================
+    # 🔴 DEBUG: SALVA L'IMMAGINE PER CAPIRE COSA VEDE LA RETE NEURALE
+    cv2.imwrite("debug/debug_input.png", image_resized)
+    # ==============================================================
+
+    # 7. NORMALIZZA E PREVIDI
+# 7. PREPARA PER IL MODELLO (Senza dividere per 255, lo fa già la rete!)
+    input_data = image_resized.reshape(1, 28, 28, 1)
+
+    prediction = model.predict(input_data, verbose=0) # verbose=0 toglie le scritte 1/1 ━━━
     
-    # Aggiungi le dimensioni per i batch e i canali (1, 28, 28, 1) per Keras
-    input_data = image_normalized.reshape(1, 28, 28, 1)
-
-    # 5. PREDIZIONE
-    prediction = model.predict(input_data)
-    
-    # Trova l'indice della classe con la probabilità più alta
     predicted_idx = np.argmax(prediction[0])
-    
-    # Recupera il nome della classe e la confidenza
     class_name = CATEGORIES[predicted_idx]
-    confidence = prediction[0][predicted_idx]
     
-    # Ritorna i tre valori richiesti da listener.py
+    # Moltiplichiamo per 100 per avere una percentuale leggibile (es: 98.5%)
+    confidence = prediction[0][predicted_idx] * 100
+    
     return class_name, confidence, prediction[0]
