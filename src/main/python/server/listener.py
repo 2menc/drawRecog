@@ -2,7 +2,7 @@ import sys
 import socket
 import yaml
 import struct
-import main.python.server.predict as predict
+import predict
 
 MAX_BYTES = 20000
 
