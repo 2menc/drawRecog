@@ -60,8 +60,10 @@ while True:
 
         image_bytes = b"".join(chunks)
         classNames, confidence, probabilities = predict.predict(model, image_bytes)
+        print("-------")
         print(f"{classNames} with {confidence}% confidence")
-
+        print("-------")
+    
     except Exception as e:
         print(f"Error: {e}")
 
