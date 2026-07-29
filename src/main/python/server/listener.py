@@ -2,6 +2,7 @@ import socket
 import struct
 import sys
 from pathlib import Path
+import cv2
 
 import yaml
 
@@ -61,6 +62,8 @@ while True:
         image_bytes = b"".join(chunks)
         classNames, confidence, probabilities = predict.predict(model, image_bytes)
         print(f"{classNames} with {confidence}% confidence")
+        cv2.imwrite("debug_input.png", image_resized)
+
 
     except Exception as e:
         print(f"Error: {e}")
