@@ -30,12 +30,12 @@ while True:
     try:
         size_data = connectionSocket.recv(4)
         if not size_data or len(size_data) < 4:
-            print("Errore: impossibile leggere la dimensione dell'immagine.")
+            print("Errore: cannot read image dimension.")
             connectionSocket.close()
             continue
 
         image_size = struct.unpack('>i', size_data)[0]
-        print(f"Dimensione immagine in arrivo: {image_size} byte")
+        print(f"image dim: {image_size} byte")
 
         chunks = []
         bytes_received = 0
@@ -56,12 +56,11 @@ while True:
         if len(image_bytes) == image_size:
             with open("delete.png", "wb") as f:
                 f.write(image_bytes)
-            print("Immagine salvata con successo come 'delete.png'\n")
         else:
-            print("Errore: i byte ricevuti non corrispondono alla dimensione attesa.\n")
+            print("Error: received bytes do not correspond to the expected length.\n")
 
     except Exception as e:
-        print(f"Si è verificato un errore: {e}")
+        print(f"Error: {e}")
 
     finally:
         connectionSocket.close()
