@@ -4,10 +4,10 @@ import numpy as np
 from PIL import Image
 import yaml
 import sys
-
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-CONFIG_PATH = REPO_ROOT / "src/main/resources/serverConfig.yaml"
+CONFIG_PATH = REPO_ROOT / "src/main/resources/datasetScrapeOptions.yaml"
 
 with CONFIG_PATH.open() as stream:
     try:
@@ -18,29 +18,8 @@ with CONFIG_PATH.open() as stream:
 
 
 # 1. Configuration
-CATEGORIES = [
-    "apple", "banana", "star", "sun", "cloud", 
-    "moon", "flower", "tree", "fish", "bird", 
-    "butterfly", "car", "cup", "umbrella", "key", 
-    "pencil", "clock", "book", "house", "heart",
-    "airplane", "ant", "anvil", "axe", "backpack",
-    "basket", "bat", "bear", "bed", "bee",
-    "bicycle", "brain", "bread", "bridge", "bucket",
-    "bus", "bush", "cactus", "cake", "calculator",
-    "calendar", "camel", "camera", "candle", "cannon",
-    "carrot", "cat", "chair", "circle", "compass",
-    "computer", "cookie", "cow", "crab", "crocodile",
-    "crown", "diamond", "dog", "dolphin", "donut",
-    "door", "dragon", "drums", "duck", "ear",
-    "elephant", "envelope", "eye", "face", "fan",
-    "feather", "fence", "flashlight", "foot", "fork",
-    "frog", "giraffe", "glasses", "grapes", "guitar",
-    "hammer", "hand", "hat", "helicopter", "horse",
-    "hospital", "jacket", "knife", "laptop", "leaf",
-    "leg", "lion", "monkey", "mountain", "mouse",
-    "mouth", "mushroom", "nose", "octopus", "piano"
-]
-IMAGE_NUMBER = 5000  # How many PNG files you want to create
+CATEGORIES = data["categories"]
+IMAGE_NUMBER = data["imagesNumber"]  # How many PNG files you want to create
 
 os.makedirs("dataset/npyFiles", exist_ok=True)
 
