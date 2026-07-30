@@ -88,3 +88,13 @@ def predict_from_image(image):
     """
     input_data = preprocess_image(image)
     return predict(input_data)
+
+def change_model(model_name):
+    global _session
+    import onnxruntime as ort
+    
+    print(f"loading new model: {model_name}.onnx ...")
+    model_path = f"src/main/resources/models/{model_name}.onnx"
+    
+    _session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
+    print("model successfully loaded")

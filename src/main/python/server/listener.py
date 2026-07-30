@@ -1,14 +1,13 @@
 import socket
 import struct
 import sys
+import traceback
 from pathlib import Path
-import numpy as np
 import cv2
+import numpy as np
 import yaml
 import predict
-import modelSettings
 
-MAX_BYTES = 20000
 REPO_ROOT = Path(__file__).resolve().parents[4]
 CONFIG_PATH = REPO_ROOT / "src/main/resources/serverConfig.yaml"
 
@@ -21,66 +20,78 @@ with CONFIG_PATH.open() as stream:
 
 serverPort = int(data["serverPort"])
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 serverAddress = "0.0.0.0", serverPort
-
 serverSocket.bind(serverAddress)
+serverSocket.listen(5)
 
-# 1: backlog queue: not completed connections
-serverSocket.listen(1)
+print(f"🚀 Server avviato sulla porta {serverPort}...")
 
 while True:
     print("server listening...")
-    connectionSocket, address = serverSocket.accept()
-    print("connection accepted from", connectionSocket, address)
-
+    connectionSocket = None
     try:
+        connectionSocket, address = serverSocket.accept()
+        
         size_data = connectionSocket.recv(4)
         if not size_data or len(size_data) < 4:
-            print("Errore: cannot read image dimension.")
-            connectionSocket.close()
             continue
 
-        image_size = struct.unpack('>i', size_data)[0]
-        print(f"image dim: {image_size} byte")
+        image_size = struct.unpack(">i", size_data)[0]
+        if image_size <= 0:
+            continue
 
         chunks = []
         bytes_received = 0
-
         while bytes_received < image_size:
             bytes_to_read = min(image_size - bytes_received, 4096)
             chunk = connectionSocket.recv(bytes_to_read)
-
             if not chunk:
                 break
-
             chunks.append(chunk)
             bytes_received += len(chunk)
 
         image_bytes = b"".join(chunks)
+        if not image_bytes:
+            continue
 
-        #MODEL CHANGE
+        # CHANGE MODEL COMMAND CHECK
         if image_bytes.startswith(b"MODEL:"):
-            cmd = image_bytes.decode("utf-8")
-            modelSettings.CHOSEN_MODEL = cmd.replace("MODEL:", "").strip()
+            comando = image_bytes.decode("utf-8", errors="ignore")
+            nome_modello = comando.replace("MODEL:", "").strip()
+            print(f"--> [CAMBIO MODELLO RICHIESTO DA JAVA]: {nome_modello}")
+            
+            predict.change_model(nome_modello) #changes the model
+            
+            response = nome_modello
 
-            print("model changed in: ", modelSettings.CHOSEN_MODEL, "obtained via network: ", cmd)
+        #IMAGE
+        else:
+            image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+            image = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
 
-        image_array = np.frombuffer(image_bytes, dtype=np.uint8)
-        image = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
+            # Esegui la predizione
+            className, confidence, probabilities = predict.predict_from_image(image)
+            
+            print("-------")
+            print(f"{className} with {confidence:.2f}% confidence")
+            print("-------")
+            
+            response = f"{className}:{confidence:.2f}"
 
-        className, confidence, probabilities = predict.predict_from_image(image)
-        print("-------")
-        print(f"{className} with {confidence}% confidence")
-        print("-------")
-
-        response = f"{className}:{confidence:.2f}"
+        # Invia la risposta finale a Java
         response_bytes = response.encode("utf-8")
-        connectionSocket.sendall(struct.pack('>i', len(response_bytes)))
+        connectionSocket.sendall(struct.pack(">i", len(response_bytes)))
         connectionSocket.sendall(response_bytes)
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()  
+        print(f"Errore durante l'elaborazione: {e}")
+        traceback.print_exc()
 
     finally:
-        connectionSocket.close()
+        if connectionSocket:
+            try:
+                connectionSocket.close()
+            except Exception:
+                pass
