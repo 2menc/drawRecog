@@ -18,14 +18,14 @@ def load_categories(model_name):
     labels_path = MODELS_DIR / f"{model_name}_labels.txt"
     
     if not labels_path.exists():
-        print(f"Warning: File {labels_path} not found. Using fallback.")
+        print(f"Warning: File {labels_path.resolve()} not found. Using fallback categories.")
         CATEGORIES = [f"Class_{i}" for i in range(500)]
         return
 
     with open(labels_path, 'r', encoding='utf-8') as f:
         CATEGORIES = [line.strip() for line in f if line.strip()]
         
-    print(f"Info: Loaded {len(CATEGORIES)} categories from {labels_path}.")
+    print(f"Info: Loaded {len(CATEGORIES)} categories from {labels_path.resolve()}.")
 
 def change_model(model_name):
     global _session, _input_name, _output_name
@@ -33,20 +33,27 @@ def change_model(model_name):
     print(f"\n--- REQUESTED MODEL CHANGE: {model_name} ---")
     model_path = MODELS_DIR / f"{model_name}.onnx"
     
+    # Stampa il percorso esatto cercato
+    print(f"Looking for ONNX model at: {model_path.resolve()}")
+    
     if not model_path.exists():
-        print(f"Error: File {model_path} does not exist!")
-        return
+        raise FileNotFoundError(
+            f"\n\n[CRITICAL ERROR] Model file not found!\n"
+            f"Expected path: {model_path.resolve()}\n"
+            f"Make sure the .onnx file exists and is named exactly '{model_name}.onnx'.\n"
+        )
         
     _session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
     _input_name = _session.get_inputs()[0].name
     _output_name = _session.get_outputs()[0].name
     
     output_shape = _session.get_outputs()[0].shape
-    print(f"Info: ONNX loaded! Model output shape: {output_shape}")
+    print(f"Info: ONNX loaded successfully! Output shape: {output_shape}")
     
     load_categories(model_name)
     print("------------------------------------------\n")
 
+# Caricamento iniziale
 change_model(modelSettings.CHOSEN_MODEL)
 
 def preprocess_image(image):
@@ -88,7 +95,7 @@ def preprocess_image(image):
 
 def predict(input_data):
     if _session is None:
-        raise RuntimeError("Model session is not initialized. Check if the .onnx file exists.")
+        raise RuntimeError("Model session is not initialized.")
 
     result = _session.run([_output_name], {_input_name: input_data})
     prediction = result[0]
