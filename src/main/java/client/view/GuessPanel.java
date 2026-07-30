@@ -21,6 +21,10 @@ public class GuessPanel extends JPanel{
         this.guessField.setText("Guess: " + guessClass + " with " + confidencePercent + "% of confidence");
     }
 
+    public void setInformation(String information) {
+        this.guessField.setText(information);
+    }
+
     public String getGuess() {
         return this.guessField.getText();
     }

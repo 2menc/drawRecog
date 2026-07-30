@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * MainFrame
@@ -51,4 +52,7 @@ public class MainFrame extends JFrame{
         return this.guessPanel;
     }
 
+    public void showErrorDialog(Throwable error) {
+        new JOptionPane(error.getMessage(), JOptionPane.ERROR_MESSAGE, ABORT, null);
+    }
 }
