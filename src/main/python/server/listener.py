@@ -26,7 +26,7 @@ serverAddress = "0.0.0.0", serverPort
 serverSocket.bind(serverAddress)
 serverSocket.listen(5)
 
-print(f"🚀 Server avviato sulla porta {serverPort}...")
+print(f"server open on port: {serverPort}...")
 
 while True:
     print("server listening...")
@@ -60,7 +60,7 @@ while True:
         if image_bytes.startswith(b"MODEL:"):
             comando = image_bytes.decode("utf-8", errors="ignore")
             nome_modello = comando.replace("MODEL:", "").strip()
-            print(f"--> [CAMBIO MODELLO RICHIESTO DA JAVA]: {nome_modello}")
+            print(f"--> [model change requested from java application] to model: {nome_modello}")
             
             predict.change_model(nome_modello) #changes the model
             
