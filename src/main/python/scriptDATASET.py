@@ -3,39 +3,39 @@ import urllib.request
 import numpy as np
 from PIL import Image
 
-# 1. Configurazione: inserisci la categoria che vuoi (es: 'cat', 'airplane', 'car', 'apple', 'dog')
+# 1. Configuration
 CATEGORIE = [
     "apple", "banana", "star", "sun", "cloud", 
     "moon", "flower", "tree", "fish", "bird", 
     "butterfly", "car", "cup", "umbrella", "key", 
     "pencil", "clock", "book", "house", "heart"
 ]
-NUM_IMMAGINI = 5000  # Quanti file PNG vuoi creare
+IMAGE_NUMBER = 5000  # How many PNG files you want to create
 
-for CATEGORIA in CATEGORIE:
-    # Crea la cartella per i PNG
-    cartella_output = f"dataset/{CATEGORIA}"
-    os.makedirs(cartella_output, exist_ok=True)
+for CATEGORIY in CATEGORIE:
+    # Create the folder for the PNGs
+    outputFolder = f"dataset/{CATEGORIY}"
+    os.makedirs(outputFolder, exist_ok=True)
 
-    # 2. Scarica il file .npy direttamente da Google Cloud Storage (se non già presente)
-    file_npy = f"{CATEGORIA}.npy"
-    url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{CATEGORIA}.npy"
+    # 2. Download the .npy file directly from Google Cloud Storage
+    file_npy = f"{CATEGORIY}.npy"
+    url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{CATEGORIY}.npy"
 
     if not os.path.exists(file_npy):
-        print(f"Download in corso per la categoria '{CATEGORIA}'...")
+        print(f"Downloading for category '{CATEGORIY}'...")
         urllib.request.urlretrieve(url, file_npy)
-        print("Download completato!")
+        print("Download completed!")
 
-    # 3. Estrai e salva le immagini in PNG (griglia 28x28 pixel)
-    print(f"Generazione delle prime {NUM_IMMAGINI} immagini PNG...")
-    dati = np.load(file_npy)
+    # 3. Extract and save images as PNG (28x28 pixel grid)
+    print(f"Generating the first {IMAGE_NUMBER} PNG images...")
+    data = np.load(file_npy)
 
-    for i in range(min(NUM_IMMAGINI, len(dati))):
-        # Ripristina la matrice 28x28 dell'immagine
-        matrice = dati[i].reshape(28, 28)
+    for i in range(min(IMAGE_NUMBER, len(data))):
+        # Restore the 28x28 image matrix
+        matrice = data[i].reshape(28, 28)
         
-        # Crea e salva il file PNG
+        # Create and save the PNG file
         img = Image.fromarray(matrice)
-        img.save(f"{cartella_output}/{CATEGORIA}_{i+1}.png")
+        img.save(f"{outputFolder}/{CATEGORIY}_{i+1}.png")
 
-print(f"\nFatto! Le immagini sono state salvate nella cartella '{cartella_output}'.")
+print(f"\nDone|Images have been saved in the folder '{outputFolder}'.")

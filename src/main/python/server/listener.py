@@ -59,7 +59,6 @@ while True:
 
         image_bytes = b"".join(chunks)
 
-        # Decodifica i byte grezzi in immagine (array numpy) prima di passarla a predict
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
 

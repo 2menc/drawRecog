@@ -16,13 +16,13 @@ _output_name = _session.get_outputs()[0].name
 
 def preprocess_image(image):
     """
-    Prende l'immagine decodificata (es. da cv2.imdecode) e la trasforma
-    nell'array 28x28x1 pronto per l'inferenza.
+    Takes the decoded image (e.g., from cv2.imdecode) and transforms it
+    into the 28x28x1 array ready for inference.
     """
     if image is None:
-        raise ValueError("Impossibile decodificare i byte dell'immagine.")
+        raise ValueError("Unable to decode image bytes.")
 
-    # 2. SE L'IMMAGINE HA UNO SFONDO TRASPARENTE, FATTI BIANCO LO SFONDO
+    # 2. IF THE IMAGE HAS A TRANSPARENT BACKGROUND, MAKE THE BACKGROUND WHITE
     if len(image.shape) == 3 and image.shape[2] == 4:
         alpha_channel = image[:, :, 3]
         rgb_channels = image[:, :, :3]
@@ -31,21 +31,21 @@ def preprocess_image(image):
         image = rgb_channels * alpha_factor + white_background * (1 - alpha_factor)
         image = image.astype(np.uint8)
 
-    # 3. CONVERTI IN SCALA DI GRIGI
+    # 3. CONVERT TO GRAYSCALE
     if len(image.shape) == 3:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     else:
         gray = image
 
-    # Ora abbiamo di sicuro uno sfondo bianco con tratto nero.
-    # INVERTIAMO: Sfondo nero (0), Tratto bianco (255)
+    # Now we surely have a white background with black strokes.
+    # INVERT: Black background (0), White stroke (255)
     gray = cv2.bitwise_not(gray)
 
-    # 4. INGROSSA IL TRATTO (Dilation)
-    kernel = np.ones((10, 10), np.uint8)  # Aumenta a 15 se il tratto scompare ancora
+    # 4. THICKEN THE STROKE (Dilation)
+    kernel = np.ones((10, 10), np.uint8)  # Increase to 15 if the stroke disappears again
     gray = cv2.dilate(gray, kernel, iterations=1)
 
-    # 5. RITAGLIA I BORDI (Bounding Box)
+    # 5. CROP BORDERS (Bounding Box)
     coords = cv2.findNonZero(gray)
     if coords is not None:
         x, y, w, h = cv2.boundingRect(coords)
@@ -55,20 +55,20 @@ def preprocess_image(image):
         h = min(gray.shape[0] - y, h + padding * 2)
         gray = gray[y:y+h, x:x+w]
 
-    # 6. RESIZE ESATTO A 28x28
+    # 6. 28x28 resize
     image_resized = cv2.resize(gray, (28, 28), interpolation=cv2.INTER_AREA)
 
-    # 🔴 DEBUG: SALVA L'IMMAGINE PER CAPIRE COSA VEDE LA RETE NEURALE
+    # 🔴 DEBUG: SAVE THE IMAGE TO UNDERSTAND WHAT THE NEURAL NETWORK SEES
     cv2.imwrite("debug/debug_input.png", image_resized)
 
-    # 7. PREPARA PER IL MODELLO (senza dividere per 255, ci pensa la rete)
+    # 7. PREPARE FOR THE MODEL (without dividing by 255, the network handles it)
     input_data = image_resized.reshape(1, 28, 28, 1).astype(np.float32)
     return input_data
 
 
 def predict(input_data):
     """
-    input_data: array numpy già preprocessato, shape (1, 28, 28, 1), dtype float32.
+    input_data: preprocessed numpy array, shape (1, 28, 28, 1), dtype float32.
     """
     result = _session.run([_output_name], {_input_name: input_data})
     prediction = result[0]
@@ -82,8 +82,8 @@ def predict(input_data):
 
 def predict_from_image(image):
     """
-    Funzione di comodo: prende l'immagine grezza (es. da cv2.imdecode)
-    e restituisce direttamente il risultato della predizione.
+    Convenience function: takes the raw image (e.g., from cv2.imdecode)
+    and directly returns the prediction result.
     """
     input_data = preprocess_image(image)
     return predict(input_data)
