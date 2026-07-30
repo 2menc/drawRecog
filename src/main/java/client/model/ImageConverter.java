@@ -1,4 +1,4 @@
-package client.model.connection;
+package client.model;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
