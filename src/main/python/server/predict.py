@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import tensorflow as tf
 import onnxruntime as ort
 import numpy as np
 
