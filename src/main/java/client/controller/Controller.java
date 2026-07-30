@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
-import client.model.connection.ImageConverter;
+import client.model.ImageConverter;
 import client.model.connection.Sender;
 import client.view.MainFrame;
 
