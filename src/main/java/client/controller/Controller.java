@@ -3,7 +3,6 @@ package client.controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
 import client.model.ImageConverter;
 import client.model.connection.Sender;
 import client.view.MainFrame;
@@ -11,6 +10,7 @@ import client.view.MainFrame;
 public class Controller {
 
     private final MainFrame mainFrame;
+    private String guess;
 
     public Controller() {
 
@@ -36,7 +36,9 @@ public class Controller {
                 }
                 */
                 final var sender = new Sender();
-                sender.sendFile(buffImg);
+
+                guess = sender.sendFile(buffImg);
+                System.out.println(guess);
             }            
         });
     }

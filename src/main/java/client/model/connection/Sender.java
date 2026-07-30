@@ -29,7 +29,7 @@ public class Sender {
             }
     }
 
-    public void sendFile(BufferedImage imageToSend) {
+    public String sendFile(BufferedImage imageToSend) {
         try (
             Socket socket = new Socket(serverAddress, serverPort);
 
@@ -45,6 +45,11 @@ public class Sender {
             dataOut.write(imageBytes);
 
             out.flush();
+
+            final var receiver = new Receiver();
+            String result = receiver.receive(socket.getInputStream());
+            return result;
+
                         
         } catch (IOException e) {
             throw new IllegalStateException(e);

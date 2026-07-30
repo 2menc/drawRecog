@@ -62,10 +62,15 @@ while True:
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
 
-        classNames, confidence, probabilities = predict.predict_from_image(image)
+        className, confidence, probabilities = predict.predict_from_image(image)
         print("-------")
-        print(f"{classNames} with {confidence}% confidence")
+        print(f"{className} with {confidence}% confidence")
         print("-------")
+
+        response = f"{className}:{confidence:.2f}"
+        response_bytes = response.encode("utf-8")
+        connectionSocket.sendall(struct.pack('>i', len(response_bytes)))
+        connectionSocket.sendall(response_bytes)
 
     except Exception as e:
         print(f"Error: {e}")
