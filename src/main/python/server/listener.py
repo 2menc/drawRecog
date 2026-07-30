@@ -22,7 +22,7 @@ with CONFIG_PATH.open() as stream:
 
 serverPort = int(data["serverPort"])
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serverAddress = "localhost", serverPort
+serverAddress = "0.0.0.0", serverPort
 
 serverSocket.bind(serverAddress)
 
