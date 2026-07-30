@@ -20,18 +20,12 @@ public class NetworkClient {
     private final int serverPort;
     private final String serverAddress;
 
-    public NetworkClient() {
 
-        if (FileReader.getStringFromFile("serverAddress").isPresent()) {
-            serverAddress = FileReader.getStringFromFile("serverAddress").get();
-        } else {
-            throw new IllegalArgumentException("param not exists in yaml file");
-        }
-        if (FileReader.getStringFromFile("serverPort").isPresent()) {
-            serverPort = Integer.parseInt(FileReader.getStringFromFile("serverPort").get());
-        } else {
-            throw new IllegalArgumentException("param not exists in yaml file");
-        }
+    public NetworkClient(String serverAddress) {
+
+        this.serverAddress = serverAddress;
+
+        serverPort = Integer.parseInt(FileReader.getStringFromFile("serverPort").get());
     }
 
 

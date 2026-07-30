@@ -14,7 +14,7 @@ public class Controller {
     private final MainFrame mainFrame;
     private String guess;
 
-    public Controller() {
+    public Controller(String serverIp) {
 
         this.mainFrame = new MainFrame();
 
@@ -40,7 +40,7 @@ public class Controller {
                 }
                 */
 
-                final var client = new NetworkClient();
+                final var client = new NetworkClient(serverIp);
                 
                 guess = client.sendAndReceiveImage(buffImg);
 
@@ -56,7 +56,7 @@ public class Controller {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                final var client = new NetworkClient();
+                final var client = new NetworkClient(serverIp);
 
                 final String chosenModel = mainFrame.getToolbar().getChosenModel();
                 final String chosenModelCheck = client.sendAndReceiveModelChange(chosenModel);
@@ -71,5 +71,4 @@ public class Controller {
         });
 
     }
-
 }
