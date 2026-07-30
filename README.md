@@ -99,6 +99,7 @@ To download local PNG images for the categories configured in `datasetScrapeOpti
 ```bash
 ./gradlew scraper
 ```
+*this project does not provide any cnn model creation utilities: only takes the dataset for nn training*
 
 ---
 
