@@ -35,7 +35,9 @@ for CATEGORY in CATEGORIES:
         continue
 
     file_npy = f"dataset/npyFiles/{CATEGORY}.npy"
-    url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{CATEGORY}.npy"
+
+    category_encoded = urllib.parse.quote(CATEGORY)
+    url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{category_encoded}.npy"
 
     # 2. Download del file .npy se manca sul disco
     if not os.path.exists(file_npy):
