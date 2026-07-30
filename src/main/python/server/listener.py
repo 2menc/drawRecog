@@ -60,10 +60,10 @@ while True:
 
         #MODEL CHANGE
         if image_bytes.startswith("MODELCHANGE"):
-
-
             cmd = image_bytes.decode("utf-8")
             modelSettings.CHOSEN_MODEL = cmd.replace("MODEL:", "").strip()
+
+            print("model changed in: ", modelSettings.CHOSEN_MODEL, "obtained via network: ", cmd)
 
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
