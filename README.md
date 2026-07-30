@@ -31,7 +31,7 @@ The graphical user interface (built with **Java Swing**) allows users to sketch 
 │                         │                 │                         │
 │  - Launcher / GUI       │  TCP Sockets    │  - listener.py          │
 │  - Controller           ├────────────────►│  - OpenCV Preprocessing │
-│  - NetworkClient        │ (Port)     │  - ONNXRuntime Inference│
+│  - NetworkClient        │      (Port)     │  - ONNXRuntime Inference│
 └─────────────────────────┘                 └─────────────────────────┘
 ```
 
