@@ -2,12 +2,11 @@ import socket
 import struct
 import sys
 from pathlib import Path
-
 import numpy as np
 import cv2
 import yaml
-
 import predict
+import modelSettings
 
 MAX_BYTES = 20000
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -58,6 +57,13 @@ while True:
             bytes_received += len(chunk)
 
         image_bytes = b"".join(chunks)
+
+        #MODEL CHANGE
+        if image_bytes.startswith("MODELCHANGE"):
+
+
+            cmd = image_bytes.decode("utf-8")
+            modelSettings.CHOSEN_MODEL = cmd.replace("MODEL:", "").strip()
 
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)

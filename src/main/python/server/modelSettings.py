@@ -1,0 +1,1 @@
+CHOSEN_MODEL = "cnn1-20classes"

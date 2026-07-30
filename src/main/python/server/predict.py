@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import onnxruntime as ort
+import modelSettings
 
 CATEGORIES = [
     'apple', 'banana', 'bird', 'book', 'butterfly',
@@ -9,7 +10,7 @@ CATEGORIES = [
     'pencil', 'star', 'sun', 'tree', 'umbrella'
 ]
 
-_session = ort.InferenceSession("src/main/resources/models/model.onnx", providers=["CPUExecutionProvider"])
+_session = ort.InferenceSession("src/main/resources/models/", modelSettings.CHOSEN_MODEL + "onnx", providers=["CPUExecutionProvider"])
 _input_name = _session.get_inputs()[0].name
 _output_name = _session.get_outputs()[0].name
 
