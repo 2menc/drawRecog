@@ -18,6 +18,7 @@ bin/
 #Ignore personal files
 TODO.txt
 dataset/
+.env
 
 #ignore virtual environment and python dirs
 v_env/

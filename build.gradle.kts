@@ -29,6 +29,7 @@ dependencies {
     implementation("org.jooq:jool:0.9.15")
     implementation("com.formdev:flatlaf:3.7.1")
     implementation("org.yaml:snakeyaml:2.2")
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
 
     /*
      * Simple Logging Facade for Java (SLF4J)
