@@ -4,62 +4,48 @@ import onnxruntime as ort
 import modelSettings
 import os
 
-# Inizializziamo le variabili globali vuote
 CATEGORIES = []
 _session = None
 _input_name = None
 _output_name = None
 
 def load_categories(model_name):
-    """
-    Carica le categorie da un file txt con lo stesso nome del modello.
-    Esempio: per 'model99.onnx', legge 'model99_labels.txt'
-    """
     global CATEGORIES
-    labels_path = f"src/main/resources/models/{model_name}.classes"
+    labels_path = f"src/main/resources/models/{model_name}_labels.txt"
     
     if not os.path.exists(labels_path):
-        print(f"⚠️ ATTENZIONE: File labels non trovato ({labels_path}). Uso categorie fallback.")
-        CATEGORIES = [f"Class_{i}" for i in range(1000)] # Fallback fittizio
+        print(f"Warning: File {labels_path} not found. Using fallback.")
+        CATEGORIES = [f"Class_{i}" for i in range(500)]
         return
 
     with open(labels_path, 'r', encoding='utf-8') as f:
         CATEGORIES = [line.strip() for line in f if line.strip()]
-    print(f"Caricate {len(CATEGORIES)} categorie per il modello {model_name}.")
+        
+    print(f"Info: Loaded {len(CATEGORIES)} categories from {labels_path}.")
 
 def change_model(model_name):
-    """
-    Cambia dinamicamente il modello ONNX e aggiorna labels e input/output.
-    """
     global _session, _input_name, _output_name
-    import onnxruntime as ort
     
-    print(f"Caricamento nuovo modello: {model_name}.onnx ...")
+    print(f"\n--- REQUESTED MODEL CHANGE: {model_name} ---")
     model_path = f"src/main/resources/models/{model_name}.onnx"
     
-    try:
-        _session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
-        # FONDAMENTALE: aggiornare i nomi di I/O quando si cambia modello
-        _input_name = _session.get_inputs()[0].name
-        _output_name = _session.get_outputs()[0].name
+    if not os.path.exists(model_path):
+        print(f"Error: File {model_path} does not exist!")
+        return
         
-        # Carichiamo le categorie specifiche per questo modello
-        load_categories(model_name)
-        
-        print("Modello e categorie caricati con successo!")
-    except Exception as e:
-        print(f"Errore critico nel caricamento del modello {model_name}: {e}")
+    _session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
+    _input_name = _session.get_inputs()[0].name
+    _output_name = _session.get_outputs()[0].name
+    
+    output_shape = _session.get_outputs()[0].shape
+    print(f"Info: ONNX loaded! Model output shape: {output_shape}")
+    
+    load_categories(model_name)
+    print("------------------------------------------\n")
 
-# Inizializzazione al primo avvio
 change_model(modelSettings.CHOSEN_MODEL)
 
-
 def preprocess_image(image):
-    # ... [IL TUO CODICE QUI RIMANE IDENTICO, È PERFETTO PER QUICKDRAW] ...
-    # Assicurati solo che tutti i tuoi modelli futuri accettino shape 28x28. 
-    # Se in futuro usi reti tipo MobileNet, dovrai cambiare il cv2.resize a (224, 224)
-    # ...
-    
     if image is None:
         raise ValueError("Unable to decode image bytes.")
 
@@ -96,31 +82,20 @@ def preprocess_image(image):
     input_data = image_resized.reshape(1, 28, 28, 1).astype(np.float32)
     return input_data
 
-
 def predict(input_data):
-    """
-    input_data: preprocessed numpy array, shape (1, 28, 28, 1), dtype float32.
-    """
     result = _session.run([_output_name], {_input_name: input_data})
     prediction = result[0]
 
     predicted_idx = np.argmax(prediction[0])
     confidence = prediction[0][predicted_idx] * 100
 
-    # DEBUG UTILE: Stampa quante categorie hai e cosa ha predetto la rete
-    print(f"[DEBUG] La rete ha predetto l'indice: {predicted_idx}")
-    print(f"[DEBUG] La lista CATEGORIES contiene: {len(CATEGORIES)} elementi")
-
-    # CONTROLLO DI SICUREZZA
     if predicted_idx < len(CATEGORIES):
         class_name = CATEGORIES[predicted_idx]
     else:
-        # Se l'indice è fuori scala, non crasha ma restituisce un nome generico
         class_name = f"Unknown_Class_{predicted_idx}"
-        print(f"⚠️ ATTENZIONE: Il modello ha predetto l'indice {predicted_idx}, ma hai solo {len(CATEGORIES)} categorie in lista!")
+        print(f"Alert: Model predicted index {predicted_idx}, but only {len(CATEGORIES)} categories loaded!")
 
     return class_name, confidence, prediction[0]
-
 
 def predict_from_image(image):
     input_data = preprocess_image(image)
