@@ -1,4 +1,4 @@
-# 🎨 DrawRecog – Real-Time Quick, Draw! Recognition App
+# 🎨 DrawRecog – Drawing Recognition App like Quick, Draw! 
 
 ![Java](https://img.shields.io/badge/Java-21+-orange.svg)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
@@ -31,7 +31,7 @@ The graphical user interface (built with **Java Swing**) allows users to sketch 
 │                         │                 │                         │
 │  - Launcher / GUI       │  TCP Sockets    │  - listener.py          │
 │  - Controller           ├────────────────►│  - OpenCV Preprocessing │
-│  - NetworkClient        │ (Port)     │  - ONNXRuntime Inference│
+│  - NetworkClient        │      (Port)     │  - ONNXRuntime Inference│
 └─────────────────────────┘                 └─────────────────────────┘
 ```
 
@@ -99,6 +99,7 @@ To download local PNG images for the categories configured in `datasetScrapeOpti
 ```bash
 ./gradlew scraper
 ```
+*this project does not provide any cnn model creation utilities: only takes the dataset for nn training*
 
 ---
 
