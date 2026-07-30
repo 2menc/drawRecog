@@ -3,6 +3,8 @@ import struct
 import sys
 from pathlib import Path
 
+import numpy as np
+import cv2
 import yaml
 
 import predict
@@ -10,7 +12,6 @@ import predict
 MAX_BYTES = 20000
 REPO_ROOT = Path(__file__).resolve().parents[4]
 CONFIG_PATH = REPO_ROOT / "src/main/resources/serverConfig.yaml"
-MODEL_PATH = REPO_ROOT / "src/main/resources/save_at_5.keras"
 
 with CONFIG_PATH.open() as stream:
     try:
@@ -27,8 +28,6 @@ serverSocket.bind(serverAddress)
 
 # 1: backlog queue: not completed connections
 serverSocket.listen(1)
-
-model = predict.load_model(MODEL_PATH)
 
 while True:
     print("server listening...")
@@ -59,11 +58,16 @@ while True:
             bytes_received += len(chunk)
 
         image_bytes = b"".join(chunks)
-        classNames, confidence, probabilities = predict.predict(model, image_bytes)
+
+        # Decodifica i byte grezzi in immagine (array numpy) prima di passarla a predict
+        image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+        image = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
+
+        classNames, confidence, probabilities = predict.predict_from_image(image)
         print("-------")
         print(f"{classNames} with {confidence}% confidence")
         print("-------")
-    
+
     except Exception as e:
         print(f"Error: {e}")
 
