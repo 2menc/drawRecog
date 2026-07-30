@@ -10,9 +10,6 @@ CATEGORIES = [
     'pencil', 'star', 'sun', 'tree', 'umbrella'
 ]
 
-def load_model(model_path):
-    return tf.keras.models.load_model(model_path)
-
 _session = ort.InferenceSession("models/model.onnx", providers=["CPUExecutionProvider"])
 _input_name = _session.get_inputs()[0].name
 _output_name = _session.get_outputs()[0].name
