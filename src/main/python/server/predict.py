@@ -3,6 +3,10 @@ import cv2
 import onnxruntime as ort
 import modelSettings
 import os
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+MODELS_DIR = REPO_ROOT / "src/main/resources/models"
 
 CATEGORIES = []
 _session = None
@@ -11,9 +15,9 @@ _output_name = None
 
 def load_categories(model_name):
     global CATEGORIES
-    labels_path = f"src/main/resources/models/{model_name}_labels.txt"
+    labels_path = MODELS_DIR / f"{model_name}_labels.txt"
     
-    if not os.path.exists(labels_path):
+    if not labels_path.exists():
         print(f"Warning: File {labels_path} not found. Using fallback.")
         CATEGORIES = [f"Class_{i}" for i in range(500)]
         return
@@ -27,13 +31,13 @@ def change_model(model_name):
     global _session, _input_name, _output_name
     
     print(f"\n--- REQUESTED MODEL CHANGE: {model_name} ---")
-    model_path = f"src/main/resources/models/{model_name}.onnx"
+    model_path = MODELS_DIR / f"{model_name}.onnx"
     
-    if not os.path.exists(model_path):
+    if not model_path.exists():
         print(f"Error: File {model_path} does not exist!")
         return
         
-    _session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
+    _session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
     _input_name = _session.get_inputs()[0].name
     _output_name = _session.get_outputs()[0].name
     
@@ -83,6 +87,9 @@ def preprocess_image(image):
     return input_data
 
 def predict(input_data):
+    if _session is None:
+        raise RuntimeError("Model session is not initialized. Check if the .onnx file exists.")
+
     result = _session.run([_output_name], {_input_name: input_data})
     prediction = result[0]
 
