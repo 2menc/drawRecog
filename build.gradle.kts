@@ -97,3 +97,18 @@ tasks.register<JavaExec>("client") {
     
     mainClass.set("client.Launcher") 
 }
+
+tasks.register<Exec>("scraper") {
+    group = "application"
+    description = "run quick! draw scraper with datasetScrapeOption.yaml configuration"
+    
+    val isWindows = org.gradle.internal.os.OperatingSystem.current().isWindows
+
+    val venvPython = if (isWindows) file("v_env/Scripts/python.exe") else file("v_env/bin/python")
+    val defaultPython = if (isWindows) "py" else "python3"
+
+    val pythonExec = if (venvPython.exists()) venvPython.absolutePath else defaultPython
+
+    commandLine(pythonExec, "-u", "src/main/python/scriptDataset.py")
+}
+
