@@ -1,4 +1,4 @@
-# 🎨 DrawRecog – Quick, Draw! Recognition App
+# 🎨 DrawRecog – Drawing Recognition App like Quick, Draw! 
 
 ![Java](https://img.shields.io/badge/Java-21+-orange.svg)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
