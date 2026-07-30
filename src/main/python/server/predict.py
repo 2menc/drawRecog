@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 import tensorflow as tf
+import onnxruntime as ort
+import numpy as np
 
 CATEGORIES = [
     'apple', 'banana', 'bird', 'book', 'butterfly', 
@@ -12,11 +14,17 @@ CATEGORIES = [
 def load_model(model_path):
     return tf.keras.models.load_model(model_path)
 
-def predict(model, image_bytes):
-    # 1. Leggi l'immagine, supportando anche il canale Alpha (trasparenza)
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_UNCHANGED)
-    
+_session = ort.InferenceSession("models/model.onnx", providers=["CPUExecutionProvider"])
+_input_name = _session.get_inputs()[0].name
+_output_name = _session.get_outputs()[0].name
+
+def predict(image_array):
+    """
+    image_array: array numpy già preprocessato con la shape/dtype
+    attesi dal modello (vedi output del passo 2).
+    """
+    result = _session.run([_output_name], {_input_name: image_array.astype(np.float32)})
+    return result[0]    
     if image is None:
         raise ValueError("Impossibile decodificare i byte dell'immagine.")
 
