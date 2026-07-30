@@ -59,7 +59,7 @@ while True:
         image_bytes = b"".join(chunks)
 
         #MODEL CHANGE
-        if image_bytes.startswith("MODELCHANGE"):
+        if image_bytes.startswith(b"MODELCHANGE"):
             cmd = image_bytes.decode("utf-8")
             modelSettings.CHOSEN_MODEL = cmd.replace("MODEL:", "").strip()
 
