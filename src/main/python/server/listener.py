@@ -59,7 +59,7 @@ while True:
         image_bytes = b"".join(chunks)
 
         #MODEL CHANGE
-        if image_bytes.startswith(b"MODELCHANGE"):
+        if image_bytes.startswith(b"MODEL:"):
             cmd = image_bytes.decode("utf-8")
             modelSettings.CHOSEN_MODEL = cmd.replace("MODEL:", "").strip()
 
@@ -79,7 +79,8 @@ while True:
         connectionSocket.sendall(response_bytes)
 
     except Exception as e:
-        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()  
 
     finally:
         connectionSocket.close()
