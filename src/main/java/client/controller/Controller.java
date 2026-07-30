@@ -38,7 +38,13 @@ public class Controller {
                 final var sender = new Sender();
 
                 guess = sender.sendFile(buffImg);
-                System.out.println(guess);
+
+                String[] guessArray = guess.split(":");
+
+                var guessClass = guessArray[0];
+                var guessConfidence = guessArray[1];
+
+                mainFrame.getGuessPanel().setGuess(guessClass, guessConfidence);
             }            
         });
     }
