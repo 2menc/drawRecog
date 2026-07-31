@@ -110,6 +110,6 @@ tasks.register<Exec>("scraper") {
 
     val pythonExec = if (venvPython.exists()) venvPython.absolutePath else defaultPython
 
-    commandLine(pythonExec, "-u", "src/main/python/scrapeDataset.py")
+    commandLine(pythonExec, "-u", "src/main/python/scraper/scrapeDataset.py")
 }
 
