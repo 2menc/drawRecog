@@ -14,8 +14,6 @@ with CONFIG_PATH.open() as stream:
 
 categories = data["categories"]
 
-scrapeDirectory = "DATASET_PROVA/dataset_completo/"
-
 def verifyFolders(scrapeDirectory):
 
     folderCounter = 0
@@ -47,5 +45,3 @@ def anymatch(mainFolder):
             return True
 
     return False
-
-verifyFolders(scrapeDirectory)
