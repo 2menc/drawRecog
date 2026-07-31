@@ -6,8 +6,9 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 import yaml
+import scrapeCheck
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 CONFIG_PATH = REPO_ROOT / "src/main/resources/datasetScrapeOptions.yaml"
 
 with CONFIG_PATH.open() as stream:
@@ -26,7 +27,6 @@ for CATEGORY in CATEGORIES:
     outputFolder = f"dataset/{CATEGORY}"
     os.makedirs(outputFolder, exist_ok=True)
 
-    # 1. Se la categoria è già completata, salta subito
     last_png = f"{outputFolder}/{CATEGORY}_{IMAGE_NUMBER}.png"
     if os.path.exists(last_png):
         print(
@@ -39,7 +39,6 @@ for CATEGORY in CATEGORIES:
     category_encoded = urllib.parse.quote(CATEGORY)
     url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{category_encoded}.npy"
 
-    # 2. Download del file .npy se manca sul disco
     if not os.path.exists(file_npy):
         print(f"Downloading for category '{CATEGORY}'...")
         try:
@@ -85,4 +84,8 @@ for CATEGORY in CATEGORIES:
             img = Image.fromarray(matrice)
             img.save(png_filename)
 
-print("\nDone! Scraping completed successfully.")
+print("\nDone! Scraping completed.")
+
+print("=" * 50)
+print("checking ...")
+scrapeCheck.scrapeDirectory("dataset/")
