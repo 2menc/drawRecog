@@ -88,4 +88,4 @@ print("\nDone! Scraping completed.")
 
 print("=" * 50)
 print("checking ...")
-scrapeCheck.scrapeDirectory("dataset/")
+scrapeCheck.verifyFolders("dataset/")
