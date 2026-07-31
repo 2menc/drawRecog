@@ -23,3 +23,6 @@ dataset/
 #ignore virtual environment and python dirs
 v_env/
 src/main/python/server/__pycache__/
+
+#ignore scraping folder
+dataset/ 
