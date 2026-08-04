@@ -3,4 +3,5 @@ serverPort: "8080"
 models: [
   "cnn-20params",
   "cnn_v2.0-99params"
+  "cnn_v3.0-308params"
 ]
